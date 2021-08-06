@@ -1,0 +1,42 @@
+name: themedsudoku
+description: A Themed Sudoku Android Application.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.3
+  flutter_svg: ^0.22.0
+  path_provider: ^2.0.2
+  audioplayers: ^0.19.1
+  google_mobile_ads: ^0.13.2
+  launch_review: ^3.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+
+    # Audio
+    - assets/audio/wrong_answer.mp3
+    - assets/audio/correct_answer.mp3
+    - assets/audio/win.mp3
+
+    # Images
+    - assets/hint.png
+
+    # SVG
+    - assets/star.svg
+    - assets/like.svg
