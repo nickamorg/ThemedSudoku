@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:themedsudoku/AppTheme.dart';
+import 'package:themedsudoku/sudoku.dart';
 
 class HomeScreen extends StatelessWidget {
 
@@ -22,6 +23,10 @@ class HomeState extends State<Home> {
 
 	@override
     Widget build(BuildContext context) {
+        Grid grid = Grid(size: 9);
+        grid.generate();
+        print(grid);
+
         return Scaffold(
             body: Container(
                 decoration: BoxDecoration(
