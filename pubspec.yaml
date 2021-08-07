@@ -19,6 +19,7 @@ dependencies:
   google_mobile_ads: ^0.13.2
   launch_review: ^3.0.1
   carousel_slider: ^4.0.0
+  numerus: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -41,3 +42,10 @@ flutter:
     # SVG
     - assets/star.svg
     - assets/like.svg
+    - assets/time.svg
+
+    # Themes
+    - assets/themes/Candies.svg
+    - assets/themes/Vegetables.svg
+    - assets/themes/Nature Elements.svg
+    - assets/themes/Zombies.svg

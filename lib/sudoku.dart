@@ -8,11 +8,18 @@ class Grid {
     int width = 2;
     List<Cell> emptyCells = [];
     int emptyCellsCount = 0;
+    int totalLevels = 0;
+    int solvedLevels = 5;
+    List<int> levelsTime = [60, 50, 30, 20, 70];
+    bool showThemes = false;
+    bool showLevels = false;
 
     Grid({required this.size}) {
         cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
         width = size % 2 == 0 ? size ~/ 2 : sqrt(size).toInt() * sqrt(size).toInt() == size ? sqrt(size).toInt() : size;
         height = size % 2 == 0 ? 2 : sqrt(size).toInt() * sqrt(size).toInt() == size ? sqrt(size).toInt() : 1;
+
+        totalLevels = size == 4 ? 10 : size == 6 ? 20 : 30;
     }
 
     @override
@@ -185,4 +192,46 @@ class Cell {
     int col;
 
     Cell({required this.row, required this.col});
+}
+
+class Levels {
+    List<Grid> sudokuList = [];
+
+    Levels() {
+        sudokuList.add(Grid(size: 4));
+        sudokuList.add(Grid(size: 6));
+        sudokuList.add(Grid(size: 9));
+
+        sudokuList.forEach((sudoku) {
+            sudoku.generate(sudoku.solvedLevels + 1);
+        });
+    }
+
+    hideDetails() {
+        sudokuList.forEach((sudoku) {
+            sudoku.showThemes = false;
+            sudoku.showLevels = false;
+        });
+    }
+
+    bool toShowDetails() {
+        for (Grid sudoku in sudokuList) {
+            if (sudoku.showThemes || sudoku.showLevels) return true;
+        }
+        return false;
+    }
+}
+
+String getDurationInTime(int seconds) {
+    final now = Duration(seconds: seconds);
+
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(now.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(now.inSeconds.remainder(60));
+    return "${twoDigits(now.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+}
+
+String displayCell(int number) {
+    if (number == 0) return '';
+    return number.toString();
 }
