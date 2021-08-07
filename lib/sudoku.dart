@@ -1,4 +1,22 @@
 import 'dart:math';
+import 'package:themedsudoku/library.dart';
+
+class SudokuGridView {
+    Grid sudoku = Grid(size: 6);
+    int totalLevels = 0;
+    List<int> levelsTime = [60, 50, 30, 20, 70, 99];
+    bool showThemes = false;
+    bool showLevels = false;
+    int expandedLevelIdx = -1;
+    int selectedLevelThemeIdx = -1;
+    String theme = THEMES[Random().nextInt(THEMES.length)];
+    int size;
+
+    SudokuGridView({required this.size}) {
+        sudoku = Grid(size: size);
+        totalLevels = size == 4 ? 10 : size == 6 ? 20 : 30;
+    }
+}
 
 class Grid {
     List<List<int>> cells = [];
@@ -8,20 +26,11 @@ class Grid {
     int width = 2;
     List<Cell> emptyCells = [];
     int emptyCellsCount = 0;
-    int totalLevels = 0;
-    int solvedLevels = 5;
-    List<int> levelsTime = [60, 50, 30, 20, 70];
-    bool showThemes = false;
-    bool showLevels = false;
-    int expandedLevelIdx = -1;
-    int selectedLevelThemeIdx = -1;
 
     Grid({required this.size}) {
         cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
         width = size % 2 == 0 ? size ~/ 2 : sqrt(size).toInt() * sqrt(size).toInt() == size ? sqrt(size).toInt() : size;
         height = size % 2 == 0 ? 2 : sqrt(size).toInt() * sqrt(size).toInt() == size ? sqrt(size).toInt() : 1;
-
-        totalLevels = size == 4 ? 10 : size == 6 ? 20 : 30;
     }
 
     @override
@@ -185,8 +194,6 @@ class Grid {
 
         return filled == size * size;
     }
-
-    
 }
 
 class Cell {
@@ -197,15 +204,15 @@ class Cell {
 }
 
 class Levels {
-    List<Grid> sudokuList = [];
+    List<SudokuGridView> sudokuList = [];
 
     Levels() {
-        sudokuList.add(Grid(size: 4));
-        sudokuList.add(Grid(size: 6));
-        sudokuList.add(Grid(size: 9));
+        sudokuList.add(SudokuGridView(size: 4));
+        sudokuList.add(SudokuGridView(size: 6));
+        sudokuList.add(SudokuGridView(size: 9));
 
-        sudokuList.forEach((sudoku) {
-            sudoku.generate(sudoku.solvedLevels + 1);
+        sudokuList.forEach((sudokuGridView) {
+            sudokuGridView.sudoku.generate(sudokuGridView.levelsTime.length + 1);
         });
     }
 
@@ -218,7 +225,7 @@ class Levels {
     }
 
     bool toShowDetails() {
-        for (Grid sudoku in sudokuList) {
+        for (SudokuGridView sudoku in sudokuList) {
             if (sudoku.showThemes || sudoku.showLevels) return true;
         }
         return false;

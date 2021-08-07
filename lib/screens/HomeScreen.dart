@@ -33,41 +33,38 @@ class HomeState extends State<Home> {
 	@override
     Widget build(BuildContext context) {
         return Scaffold(
-            body: TextButton(
-                onPressed: !levels.toShowDetails() ? null : () {
-                    setState(() {
-                        levels.hideDetails();
-                    });
-                },
-                style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero
+            body: Container(
+                decoration: BoxDecoration(
+                    color: AppTheme.MAIN_COLOR
                 ),
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: AppTheme.MAIN_COLOR
-                    ),
-                    child: Column(
-                        children: [
-                            Padding(
-                                padding: EdgeInsets.only(top: 20),
-                                child: Text(
-                                    'SUDOKU',
-                                    style: TextStyle(
-                                        fontSize: 70,
-                                        color: Colors.black
-                                    )
-                                )
-                            ),
-                            Expanded(
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                        sudokuModes(),
-                                        RatingCard()
-                                    ]
-                                )
+                child: Center(
+                    child: TextButton(
+                        onPressed: !levels.toShowDetails() ? null : () {
+                            setState(() {
+                                levels.hideDetails();
+                            });
+                        },
+                        style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            splashFactory: NoSplash.splashFactory
+                        ),
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                    Text(
+                                        'SUDOKU',
+                                        style: TextStyle(
+                                            fontSize: 70,
+                                            color: Colors.black
+                                        )
+                                    ),
+                                    sudokuModes(),
+                                    RatingCard()
+                                ]
                             )
-                        ]
+                        )
                     )
                 )
             )
@@ -96,16 +93,17 @@ class HomeState extends State<Home> {
         );
     }
 
-    sudokuStatus(Grid sudoku) {
+    sudokuStatus(SudokuGridView sudokuGridView) {
         return TextButton(
             onPressed: () {
                 setState(() {
                     levels.hideDetails();
-                    sudoku.showLevels = true;
+                    sudokuGridView.showLevels = true;
                 });
             },
             style: TextButton.styleFrom(
-                padding: EdgeInsets.zero
+                padding: EdgeInsets.zero,
+                splashFactory: NoSplash.splashFactory
             ),
             child: Column(
                 children: [
@@ -124,7 +122,7 @@ class HomeState extends State<Home> {
                             bottom: 20
                         ),
                         child: Text(
-                            "${sudoku.solvedLevels}/${sudoku.totalLevels}",
+                            "${sudokuGridView.levelsTime.length}/${sudokuGridView.totalLevels}",
                             style: TextStyle(
                                 fontSize: 30,
                                 color: Colors.black,
@@ -136,74 +134,76 @@ class HomeState extends State<Home> {
         );
     }
 
-    sudokuGrid(Grid sudoku) {
+    sudokuGrid(SudokuGridView sudokuGridView) {
         return Container(
             height: 250,
             width: 250,
-            child: Stack(
-                children: [
-                    GestureDetector(
-                        onTap: () {
-                            setState(() {
-                                sudoku.showThemes = true;
-                            });
-                        },
-                        onVerticalDragEnd: (dragEndDetails) {
-                            setState(() {
-                                sudoku.showThemes = true;
-                            });
-                        },
-                        child: Card(
-                            shape: RoundedRectangleBorder(
-                                side: BorderSide(width: 3, color: Color(0xFF2FB898)),
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            child: GridView.count(
-                                physics: NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                crossAxisCount: sudoku.size,
-                                children: getSudokuBoard(sudoku)
-                            )
-                        )
-                    ),
-                    Visibility(
-                        visible: sudoku.showThemes,
-                        child: GestureDetector(
+            child: Center(
+                child: Stack(
+                    children: [
+                        GestureDetector(
                             onTap: () {
                                 setState(() {
-                                    sudoku.showThemes = false;
+                                    sudokuGridView.showThemes = true;
                                 });
                             },
                             onVerticalDragEnd: (dragEndDetails) {
                                 setState(() {
-                                    sudoku.showThemes = false;
+                                    sudokuGridView.showThemes = true;
                                 });
                             },
                             child: Card(
                                 shape: RoundedRectangleBorder(
+                                    side: BorderSide(width: 3, color: Color(0xFF2FB898)),
                                     borderRadius: BorderRadius.circular(10)
                                 ),
                                 child: GridView.count(
                                     physics: NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
-                                    crossAxisCount: 3,
-                                    children: getThemes()
+                                    crossAxisCount: sudokuGridView.size,
+                                    children: getSudokuBoard(sudokuGridView)
+                                )
+                            )
+                        ),
+                        Visibility(
+                            visible: sudokuGridView.showThemes,
+                            child: GestureDetector(
+                                onTap: () {
+                                    setState(() {
+                                        sudokuGridView.showThemes = false;
+                                    });
+                                },
+                                onVerticalDragEnd: (dragEndDetails) {
+                                    setState(() {
+                                        sudokuGridView.showThemes = false;
+                                    });
+                                },
+                                child: Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10)
+                                    ),
+                                    child: GridView.count(
+                                        physics: NeverScrollableScrollPhysics(),
+                                        shrinkWrap: true,
+                                        crossAxisCount: 3,
+                                        children: getThemes()
+                                    )
                                 )
                             )
                         )
-                    )
-                ]
+                    ]
+                )
             )
         );
     }
 
-    sudokuTrailingText(Grid sudoku) {
+    sudokuTrailingText(SudokuGridView sudokuGridView) {
         return Padding(
             padding: EdgeInsets.only(
                 top: 10
             ),
             child: Text(
-                sudoku.showThemes ? 'Select Theme' : '${sudoku.size} X ${sudoku.size}',
+                sudokuGridView.showThemes ? 'Select Theme' : '${sudokuGridView.size} X ${sudokuGridView.size}',
                 style: TextStyle(
                     fontSize: 20,
                     color: Colors.black,
@@ -213,74 +213,69 @@ class HomeState extends State<Home> {
         );
     }
 
-    sudokuLevelsCard(Grid sudoku) {
+    sudokuLevelsCard(SudokuGridView sudokuGridView) {
         return Visibility(
-            visible: sudoku.showLevels,
-            child: Center(
-                child: Card(
-                    shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)
-                        ),
-                    child: TextButton(
-                        onPressed: () { },
-                        style: TextButton.styleFrom(
-                            enableFeedback: false,
-                            splashFactory: NoSplash.splashFactory
-                        ),
-                        child: Container(
-                            width: 300,
-                            child: Column(
-                                children: [
-                                    TextButton(
-                                        onPressed: () {
-                                            setState(() {
-                                                levels.hideDetails();
-                                                sudoku.showLevels = false;
-                                            });
-                                        },
-                                        style: TextButton.styleFrom(
-                                            padding: EdgeInsets.zero
+            visible: sudokuGridView.showLevels,
+            child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)
+                ),
+                child: TextButton(
+                    onPressed: () { },
+                    style: TextButton.styleFrom(
+                        enableFeedback: false,
+                        splashFactory: NoSplash.splashFactory
+                    ),
+                    child: Column(
+                        children: [
+                            TextButton(
+                                onPressed: () {
+                                    setState(() {
+                                        levels.hideDetails();
+                                        sudokuGridView.showLevels = false;
+                                    });
+                                },
+                                style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero
+                                ),
+                                child: Column(
+                                    children: [
+                                        Padding(
+                                            padding: EdgeInsets.only(
+                                                bottom: 10,
+                                                top: 13
+                                            ),
+                                            child: SvgPicture.asset(
+                                                'assets/star.svg',
+                                                height: 40
+                                            )
                                         ),
-                                        child: Column(
-                                            children: [
-                                                Padding(
-                                                    padding: EdgeInsets.only(
-                                                        bottom: 10,
-                                                        top: 13
-                                                    ),
-                                                    child: SvgPicture.asset(
-                                                        'assets/star.svg',
-                                                        height: 40
-                                                    )
-                                                ),
-                                                Text(
-                                                    "${sudoku.solvedLevels}/${sudoku.totalLevels}",
-                                                    style: TextStyle(
-                                                        fontSize: 30,
-                                                        color: Colors.black,
-                                                        fontWeight: FontWeight.w500
-                                                    )
-                                                )
-                                            ]
+                                        Text(
+                                            "${sudokuGridView.levelsTime.length}/${sudokuGridView.totalLevels}",
+                                            style: TextStyle(
+                                                fontSize: 30,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w500
+                                            )
                                         )
-                                    ),
-                                    sudokuLevels(sudoku)
-                                ]
-                            )
-                        )
+                                    ]
+                                )
+                            ),
+                            sudokuLevels(sudokuGridView)
+                        ]
                     )
                 )
             )
         );
     }
 
-    sudokuLevels(Grid sudoku) {
+    sudokuLevels(SudokuGridView sudokuGridView) {
         return Expanded(
             child: Padding(
-                padding: EdgeInsets.all(20),
+                padding: EdgeInsets.fromLTRB(5, 15, 5, 5),
                 child: ListView.separated(
                     shrinkWrap: true,
-                    itemCount: sudoku.levelsTime.length,
+                    itemCount: sudokuGridView.levelsTime.length,
                     separatorBuilder: (BuildContext context, int index) => SizedBox(height: 10), 
                     itemBuilder: (BuildContext context, int index) {
                         return Card(
@@ -292,23 +287,23 @@ class HomeState extends State<Home> {
                                 style: TextButton.styleFrom(
                                     padding: EdgeInsets.all(0)
                                 ),
-                                onPressed: sudoku.expandedLevelIdx == index ? () {
-                                    print("SELECTED THEME: " + sudoku.selectedLevelThemeIdx.toString());
+                                onPressed: sudokuGridView.expandedLevelIdx == index ? () {
+                                    print("SELECTED THEME: " + sudokuGridView.selectedLevelThemeIdx.toString());
                                     // Navigate to Game Screen
                                 } : ()  { 
                                     setState(() {
-                                        sudoku.expandedLevelIdx = index;
-                                        sudoku.selectedLevelThemeIdx = 0;
+                                        sudokuGridView.expandedLevelIdx = index;
+                                        sudokuGridView.selectedLevelThemeIdx = 0;
                                     });
                                 },
                                 child: Container(
                                     height: 50,
-                                    padding: EdgeInsets.symmetric(horizontal: 20),
+                                    padding: EdgeInsets.symmetric(horizontal: 15),
                                     child: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                            sudokuLevelLabel(sudoku, index),
-                                            sudoku.expandedLevelIdx == index ? sudokuLevelThemes(sudoku) : sudokuLevelTime(sudoku, index)
+                                            sudokuLevelLabel(sudokuGridView, index),
+                                            sudokuGridView.expandedLevelIdx == index ? sudokuLevelThemes(sudokuGridView) : sudokuLevelTime(sudokuGridView, index)
                                         ]
                                     )
                                 )
@@ -342,7 +337,7 @@ class HomeState extends State<Home> {
         return themes;
     }
 
-    sudokuLevelThemes(Grid sudoku) {
+    sudokuLevelThemes(SudokuGridView sudokuGridView) {
         return Container(
             width: 100,
             child: Center(
@@ -357,7 +352,7 @@ class HomeState extends State<Home> {
                         ),
                         onSelectedItemChanged: (index) {
                             setState(() {
-                                sudoku.selectedLevelThemeIdx = index;
+                                sudokuGridView.selectedLevelThemeIdx = index;
                             });
                         }
                     )
@@ -366,7 +361,7 @@ class HomeState extends State<Home> {
         );
     }
 
-    sudokuLevelLabel(Grid sudoku, int index) {
+    sudokuLevelLabel(SudokuGridView sudokuGridView, int index) {
         return RichText(
             text: TextSpan(
                 children: [
@@ -390,11 +385,11 @@ class HomeState extends State<Home> {
             );
     }
 
-    sudokuLevelTime(Grid sudoku, int index) {
+    sudokuLevelTime(SudokuGridView sudokuGridView, int index) {
         return Row(
             children: [
                 Text(
-                    getDurationInTime(sudoku.levelsTime[index]),
+                    getDurationInTime(sudokuGridView.levelsTime[index]),
                     style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold
@@ -434,23 +429,21 @@ class HomeState extends State<Home> {
         return themes;
     }
 
-    getSudokuBoard(Grid sudoku) {
-        String theme = THEMES[Random().nextInt(THEMES.length)];
-
+    getSudokuBoard(SudokuGridView sudokuGridView) {
         List<Container> cells = [];
 
-        for (int i = 0; i < sudoku.size; i++) {
-            for (int j = 0; j < sudoku.size; j++) {
+        for (int i = 0; i < sudokuGridView.size; i++) {
+            for (int j = 0; j < sudokuGridView.size; j++) {
                 cells.add(
                     Container(
-                        height: 40,
+                        padding: EdgeInsets.all(5),
                         child: Center(
-                            child: Padding(
-                                padding: EdgeInsets.all(5),
-                                child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: sudoku.cells[i][j] == 0 ? Text('') : SvgPicture.asset(
-                                        'assets/categories/$theme/${sudoku.cells[i][j]}.svg',
+                            child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Padding(
+                                    padding: EdgeInsets.all(1),
+                                    child: sudokuGridView.sudoku.cells[i][j] == 0 ? Text('') : SvgPicture.asset(
+                                        'assets/categories/${sudokuGridView.theme}/${sudokuGridView.sudoku.cells[i][j]}.svg',
                                         height: 40
                                     )
                                 )
@@ -459,16 +452,16 @@ class HomeState extends State<Home> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.rectangle,
-                            borderRadius: isCorner(i, j, sudoku) ? BorderRadius.only(
+                            borderRadius: isCorner(i, j, sudokuGridView) ? BorderRadius.only(
                                 topLeft: Radius.circular(i == 0 && j == 0 ? 10 : 0),
-                                topRight: Radius.circular(i == 0 && j == sudoku.size - 1 ? 10 : 0),
-                                bottomLeft: Radius.circular(i == sudoku.size - 1 && j == 0 ? 10 : 0),
-                                bottomRight: Radius.circular(i == sudoku.size - 1 && j == sudoku.size - 1 ? 10 : 0),
+                                topRight: Radius.circular(i == 0 && j == sudokuGridView.sudoku.size - 1 ? 10 : 0),
+                                bottomLeft: Radius.circular(i == sudokuGridView.sudoku.size - 1 && j == 0 ? 10 : 0),
+                                bottomRight: Radius.circular(i == sudokuGridView.size - 1 && j == sudokuGridView.size - 1 ? 10 : 0),
                             ) : null,
-                            border: !isCorner(i, j, sudoku) ? Border(
-                                left: BorderSide(width: j % sudoku.width == 0 ? 3 : 1, color: Color(0xFF2FB898)),
+                            border: !isCorner(i, j, sudokuGridView) ? Border(
+                                left: BorderSide(width: j % sudokuGridView.sudoku.width == 0 ? 3 : 1, color: Color(0xFF2FB898)),
                                 right: BorderSide(width: 1, color: Color(0xFF2FB898)),
-                                top: BorderSide(width: i % sudoku.height == 0 ? 3 : 1, color: Color(0xFF2FB898)),
+                                top: BorderSide(width: i % sudokuGridView.sudoku.height == 0 ? 3 : 1, color: Color(0xFF2FB898)),
                                 bottom: BorderSide(width: 1, color: Color(0xFF2FB898))
                             ) : Border.all(color: Color(0xFF2FB898)),
                         )
@@ -480,9 +473,9 @@ class HomeState extends State<Home> {
         return cells;
     }
 
-    isCorner(int row, int col, Grid sudoku) {
-        return (row == 0 && col == 0) || (row == 0 && col == sudoku.size - 1) ||
-            (row == sudoku.size - 1 && col == 0) || (row == sudoku.size - 1 && col == sudoku.size - 1);
+    isCorner(int row, int col, SudokuGridView sudokuGridView) {
+        return (row == 0 && col == 0) || (row == 0 && col == sudokuGridView.size - 1) ||
+            (row == sudokuGridView.size - 1 && col == 0) || (row == sudokuGridView.size - 1 && col == sudokuGridView.size - 1);
     }
 }
 
