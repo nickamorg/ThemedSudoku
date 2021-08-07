@@ -1,1 +1,1 @@
-const List<String> THEMES = ['Candies', 'Nature Elements', 'Vegetables', 'Zombies', 'Candies', 'Nature Elements', 'Vegetables', 'Zombies', 'Candies'];
+const List<String> THEMES = ['emoji', 'vegetables', 'fruit', 'emoji', 'vegetables', 'fruit', 'emoji', 'vegetables', 'fruit'];

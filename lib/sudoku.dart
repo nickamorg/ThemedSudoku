@@ -13,6 +13,8 @@ class Grid {
     List<int> levelsTime = [60, 50, 30, 20, 70];
     bool showThemes = false;
     bool showLevels = false;
+    int expandedLevelIdx = -1;
+    int selectedLevelThemeIdx = -1;
 
     Grid({required this.size}) {
         cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
@@ -211,6 +213,7 @@ class Levels {
         sudokuList.forEach((sudoku) {
             sudoku.showThemes = false;
             sudoku.showLevels = false;
+            sudoku.expandedLevelIdx = -1;
         });
     }
 

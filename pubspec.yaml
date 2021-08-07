@@ -49,3 +49,37 @@ flutter:
     - assets/themes/Vegetables.svg
     - assets/themes/Nature Elements.svg
     - assets/themes/Zombies.svg
+
+    # Emoji
+    - assets/categories/emoji/1.svg
+    - assets/categories/emoji/2.svg
+    - assets/categories/emoji/3.svg
+    - assets/categories/emoji/4.svg
+    - assets/categories/emoji/5.svg
+    - assets/categories/emoji/6.svg
+    - assets/categories/emoji/7.svg
+    - assets/categories/emoji/8.svg
+    - assets/categories/emoji/9.svg
+
+    # Vegetables
+    - assets/categories/vegetables/1.svg
+    - assets/categories/vegetables/2.svg
+    - assets/categories/vegetables/3.svg
+    - assets/categories/vegetables/4.svg
+    - assets/categories/vegetables/5.svg
+    - assets/categories/vegetables/6.svg
+    - assets/categories/vegetables/7.svg
+    - assets/categories/vegetables/8.svg
+    - assets/categories/vegetables/9.svg
+
+    # Fruit
+    - assets/categories/fruit/1.svg
+    - assets/categories/fruit/2.svg
+    - assets/categories/fruit/3.svg
+    - assets/categories/fruit/4.svg
+    - assets/categories/fruit/5.svg
+    - assets/categories/fruit/6.svg
+    - assets/categories/fruit/7.svg
+    - assets/categories/fruit/8.svg
+    - assets/categories/fruit/9.svg
+
