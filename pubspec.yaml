@@ -38,7 +38,6 @@ flutter:
 
     # PNG
     - assets/png/option_bg.png
-    - assets/png/options_bg.png
 
     # SVG
     - assets/svg/star.svg
@@ -46,6 +45,7 @@ flutter:
     - assets/svg/time.svg
     - assets/svg/back.svg
     - assets/svg/hint.svg
+    - assets/svg/options_bg.svg
 
     # Emoji
     - assets/categories/emoji/1.svg

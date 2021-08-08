@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:themedsudoku/AppTheme.dart';
+import 'package:themedsudoku/AudioPlayer.dart';
 import 'package:themedsudoku/library.dart';
 import 'package:themedsudoku/sudoku.dart';
+import 'dart:async';
 
 class GameScreen extends StatelessWidget {
     final int size;
@@ -23,6 +25,9 @@ class GameState extends State<Game> with TickerProviderStateMixin {
     int level = 1;
     int themeIdx = 0;
     int selectedOption = 0;
+    Timer? timer;
+    int time = 0;
+    bool isSolved = false;
 
     @override
 	void initState() {
@@ -33,6 +38,15 @@ class GameState extends State<Game> with TickerProviderStateMixin {
         themeIdx = widget.themeIdx;
         grid = Grid(size: size);
         grid.generate(level);
+
+        startTimer();
+    }
+
+    @override
+    void dispose() {
+        super.dispose();
+
+        timer!.cancel();
     }
 
 	@override
@@ -45,12 +59,12 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                             color: AppTheme.MAIN_COLOR
                         )
                     ),
-                    selectedOption != -1 ?  SvgPicture.asset(
+                    selectedOption != 0 ?  SvgPicture.asset(
                         'assets/categories/${THEMES[themeIdx]}/$selectedOption.svg',
                         alignment: Alignment.center,
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.cover
                     ) : SizedBox.shrink(),
                     Container(
                         child: Center(
@@ -87,12 +101,12 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                                 },
                                                                 child: SvgPicture.asset(
                                                                     'assets/svg/time.svg',
-                                                                    height: 90
+                                                                    height: 70
                                                                 )
                                                             ),
                                                             SizedBox(height: 5),
                                                             Text(
-                                                                getDurationInTime(67),
+                                                                getDurationInTime(time),
                                                                 style: TextStyle(
                                                                     color: Colors.black,
                                                                     fontWeight: FontWeight.bold,
@@ -103,7 +117,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                     )
                                                 ),
                                                 TextButton(
-                                                    onPressed: () => Navigator.pop(context),
+                                                    onPressed: () => { },
                                                     style: TextButton.styleFrom(
                                                         padding: EdgeInsets.zero,
                                                         splashFactory: NoSplash.splashFactory
@@ -117,11 +131,11 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                         )
                                     ),
                                     Container(
-                                        height: MediaQuery.of(context).size.height - 350,
-                                        width: MediaQuery.of(context).size.height - 350,
+                                        height: MediaQuery.of(context).size.width - 10,
+                                        width: MediaQuery.of(context).size.width - 10,
                                         child: Card(
                                             shape: RoundedRectangleBorder(
-                                                side: BorderSide(width: 3, color: Color(0xFF2FB898)),
+                                                side: BorderSide(width: 6, color: AppTheme.SECOND_COLOR),
                                                 borderRadius: BorderRadius.circular(10)
                                             ),
                                             child: GridView.count(
@@ -130,24 +144,31 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                 crossAxisCount: size,
                                                 children: getSudokuBoard(grid)
                                             )
-                                        ),
+                                        )
                                     ),
                                     Container(
-                                        height: 150,
+                                        height: 130,
                                         width: MediaQuery.of(context).size.width,
-                                        decoration: BoxDecoration(
-                                            image: DecorationImage(
-                                                image: AssetImage('assets/png/options_bg.png'),
-                                                // colorFilter: ColorFilter.linearToSrgbGamma(),
-                                                fit: BoxFit.fill
-                                            )
-                                        ),
-                                        child: Center(
-                                            child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: optionsWidget()
-                                            )
+                                        child: Stack(
+                                            children: [
+                                                SvgPicture.asset(
+                                                    'assets/svg/options_bg.svg',
+                                                    alignment: Alignment.center,
+                                                    width: MediaQuery.of(context).size.width,
+                                                    height: MediaQuery.of(context).size.height,
+                                                    fit: BoxFit.fill,
+                                                ),
+                                                Center(
+                                                    child: AbsorbPointer(
+                                                        absorbing: isSolved,
+                                                        child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: optionsWidget()
+                                                        )
+                                                    )
+                                                )
+                                            ]
                                         )
                                     )
                                 ]
@@ -156,6 +177,21 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                     )
                 ]
             )
+        );
+    }
+
+    void startTimer() {
+        time = 0;
+        const oneSec = const Duration(seconds: 1);
+        timer = Timer.periodic(
+            oneSec,
+            (Timer timer) { 
+                if (mounted) { 
+                    setState(() {
+                        time++;
+                    });
+                }
+            }
         );
     }
 
@@ -207,9 +243,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                 } else {
                     selectedOption = idx;
                 }
-
                 setState(() { });
-                print(idx);
             },
             child: selectedOption == idx ? 
             Container(
@@ -235,51 +269,58 @@ class GameState extends State<Game> with TickerProviderStateMixin {
     }
 
     getSudokuBoard(Grid sudoku) {
-        List<GestureDetector> cells = [];
+        List<Widget> cells = [];
 
         for (int i = 0; i < sudoku.size; i++) {
             for (int j = 0; j < sudoku.size; j++) {
                 cells.add(
-                    GestureDetector(
-                        onDoubleTap: !isReplaceable(i, j) ? null : () {
-                            setState(() {
-                                grid.cells[i][j] = 0;
-                            });
-                        },
-                        onTap: !isReplaceable(i, j) ? null : () {
-                            setState(() {
-                                grid.cells[i][j] = selectedOption;
-                            });
-                        },
-                        child: Container(
-                            padding: EdgeInsets.all(5),
-                            child: Center(
-                                child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Padding(
-                                        padding: EdgeInsets.all(1),
-                                        child: sudoku.cells[i][j] == 0 ? Text('') : SvgPicture.asset(
-                                            'assets/categories/${THEMES[themeIdx]}/${sudoku.cells[i][j]}.svg',
-                                            height: 40
+                    AbsorbPointer(
+                        absorbing: isSolved,
+                        child: GestureDetector(
+                            onDoubleTap: !isReplaceable(i, j) ? null : () {
+                                setState(() {
+                                    grid.cells[i][j] = 0;
+                                });
+                            },
+                            onTap: !isReplaceable(i, j) ? null : () {
+                                if (grid.cells[i][j] == selectedOption) {
+                                    grid.cells[i][j] = 0;
+                                } else {
+                                    grid.cells[i][j] = selectedOption;
+                                    validateGrid();
+                                }
+                                setState(() { });
+                            },
+                            child: Container(
+                                padding: EdgeInsets.all(6),
+                                child: Center(
+                                    child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Padding(
+                                            padding: EdgeInsets.all(1),
+                                            child: sudoku.cells[i][j] == 0 ? Text('') : SvgPicture.asset(
+                                                'assets/categories/${THEMES[themeIdx]}/${sudoku.cells[i][j]}.svg',
+                                                height: 80,
+                                            )
                                         )
                                     )
+                                ),
+                                decoration: BoxDecoration(
+                                    color: grid.cells[i][j] != 0 && grid.hasConflict(i, j) ? isReplaceable(i, j) ? Colors.red : AppTheme.WRONG_OPT_NOT_REPL : selectedOption != 0 && selectedOption == grid.cells[i][j] ? AppTheme.SELECTED_OPT : isReplaceable(i, j) ? AppTheme.REPLACEABLE : Colors.white,
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: isCorner(i, j, sudoku) ? BorderRadius.only(
+                                        topLeft: Radius.circular(i == 0 && j == 0 ? 10 : 0),
+                                        topRight: Radius.circular(i == 0 && j == sudoku.size - 1 ? 10 : 0),
+                                        bottomLeft: Radius.circular(i == sudoku.size - 1 && j == 0 ? 10 : 0),
+                                        bottomRight: Radius.circular(i == sudoku.size - 1 && j == sudoku.size - 1 ? 10 : 0),
+                                    ) : null,
+                                    border: !isCorner(i, j, sudoku) ? Border(
+                                        left: BorderSide(width: j % sudoku.width == 0 ? 6 : 1, color: AppTheme.SECOND_COLOR),
+                                        right: BorderSide(width: 1, color: AppTheme.SECOND_COLOR),
+                                        top: BorderSide(width: i % sudoku.height == 0 ? 6 : 1, color: AppTheme.SECOND_COLOR),
+                                        bottom: BorderSide(width: 1, color: AppTheme.SECOND_COLOR)
+                                    ) : Border.all(color: AppTheme.SECOND_COLOR),
                                 )
-                            ),
-                            decoration: BoxDecoration(
-                                color: grid.cells[i][j] != 0 && grid.hasConflict(i, j) ? isReplaceable(i, j) ? Colors.red : Color(0xFFFF6767) : selectedOption != 0 && selectedOption == grid.cells[i][j] ? Color(0xFFFFD11B) : isReplaceable(i, j) ? Color(0xFFE4E1E1) : Colors.white,
-                                shape: BoxShape.rectangle,
-                                borderRadius: isCorner(i, j, sudoku) ? BorderRadius.only(
-                                    topLeft: Radius.circular(i == 0 && j == 0 ? 10 : 0),
-                                    topRight: Radius.circular(i == 0 && j == sudoku.size - 1 ? 10 : 0),
-                                    bottomLeft: Radius.circular(i == sudoku.size - 1 && j == 0 ? 10 : 0),
-                                    bottomRight: Radius.circular(i == sudoku.size - 1 && j == sudoku.size - 1 ? 10 : 0),
-                                ) : null,
-                                border: !isCorner(i, j, sudoku) ? Border(
-                                    left: BorderSide(width: j % sudoku.width == 0 ? 3 : 1, color: Color(0xFF2FB898)),
-                                    right: BorderSide(width: 1, color: Color(0xFF2FB898)),
-                                    top: BorderSide(width: i % sudoku.height == 0 ? 3 : 1, color: Color(0xFF2FB898)),
-                                    bottom: BorderSide(width: 1, color: Color(0xFF2FB898))
-                                ) : Border.all(color: Color(0xFF2FB898)),
                             )
                         )
                     )
@@ -288,6 +329,21 @@ class GameState extends State<Game> with TickerProviderStateMixin {
         }
 
         return cells;
+    }
+
+    validateGrid() {
+        isSolved = grid.isValidSolution();
+        if (isSolved) {
+            AudioPlayer.play(AudioList.WIN);
+            if (level - 1 >= Levels.getSudokuBySize(size)!.levelsTime.length)
+            Levels.getSudokuBySize(size)!.levelsTime.add(time);
+            Levels.storeData();
+            timer!.cancel();
+
+            Future.delayed(Duration(milliseconds: 1000), () {
+                Navigator.of(context).pop();
+            });
+        }
     }
 
     isReplaceable(int row, int col) {

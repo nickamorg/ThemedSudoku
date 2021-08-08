@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'dart:math';
+import 'package:themedsudoku/DataStorage.dart';
 import 'package:themedsudoku/library.dart';
 
 class SudokuGridView {
     Grid sudoku = Grid(size: 6);
     int totalLevels = 0;
-    List<int> levelsTime = [60, 50, 30, 20, 70, 99];
+    List<int> levelsTime = [];
     bool showThemes = false;
     bool showLevels = false;
     int expandedLevelIdx = -1;
@@ -16,6 +18,10 @@ class SudokuGridView {
     SudokuGridView({required this.size}) {
         sudoku = Grid(size: size);
         totalLevels = size == 4 ? 10 : size == 6 ? 20 : 30;
+    }
+
+    double size2BorderSize() {
+        return size == 4 ? 6 : size == 6 ? 4.5 : 3;
     }
 }
 
@@ -36,7 +42,7 @@ class Grid {
 
     @override
     String toString() {
-        String str = "\n";
+        String str = '\n';
         cells.forEach((element) { str += element.toString() + '\n'; });
 
         return str;
@@ -179,14 +185,14 @@ class Grid {
     bool isValidSolution() {
         bool isValidSolution = true;
         cells.forEach((cellRow) { 
-            isValidSolution = cellRow.toSet().length == size;
+            isValidSolution = cellRow.where((cell) => cell != 0).toSet().length == size;
         });
         if (!isValidSolution) return false;
 
         for (int j = 0; j < size; j++) {
             Set values = { };
             for (int i = 0; i < size; i++) {
-                values.add(cells[i][j]);
+                if (cells[i][j] != 0) values.add(cells[i][j]);
             }
             if (values.length != size) return false;
         }
@@ -196,7 +202,7 @@ class Grid {
                 Set values = { };
                 for (int col = i; col < i + height; col++) {
                     for (int row = j; row < j + width; row++) {
-                        values.add(cells[col][row]);
+                        if (cells[i][j] != 0) values.add(cells[col][row]);
                     }
                 }
                 if (values.length != size) return false;
@@ -226,19 +232,64 @@ class Cell {
 }
 
 class Levels {
-    List<SudokuGridView> sudokuList = [];
+    static List<SudokuGridView> sudokuList = [];
 
-    Levels() {
+    static Future<void> init() async {
         sudokuList.add(SudokuGridView(size: 4));
         sudokuList.add(SudokuGridView(size: 6));
         sudokuList.add(SudokuGridView(size: 9));
 
         sudokuList.forEach((sudokuGridView) {
-            sudokuGridView.sudoku.generate(sudokuGridView.levelsTime.length + 1);
+            sudokuGridView.sudoku.generate(1);
         });
+
+        await loadDataStorage();
     }
 
-    hideDetails() {
+    static SudokuGridView? getSudokuBySize(int size) {
+        for (SudokuGridView sudokuGridView in sudokuList) {
+            if (sudokuGridView.size == size) return sudokuGridView;
+        }
+
+        return null;
+    }
+
+    static void storeData() {
+		String str = '{"levels":{';
+        int sudokuIdx = sudokuList.length;
+        sudokuList.forEach((sudoku) {
+            str += '"${sudoku.size}":{"time":${sudoku.levelsTime}}';
+            str += '${(--sudokuIdx > 0 ? ',' : '')}';
+        });
+        str += '},"hints":$hints}';
+
+		DataStorage.writeData(str);
+    }
+
+    static Future<void> loadDataStorage() async {
+		await DataStorage.fileExists().then((value) async {
+			if (value) {
+				await DataStorage.readData().then((value) {
+					if (value.isNotEmpty) {
+						Map<String, dynamic> data = jsonDecode(value);
+
+                        data['levels'].forEach((levelSize, levelData) {
+                            SudokuGridView? sudokuGridView = getSudokuBySize(int.parse(levelSize));
+                            sudokuGridView!.levelsTime = levelData['time'].cast<int>();
+                            sudokuGridView.sudoku.generate(sudokuGridView.levelsTime.length + 1);
+                            sudokuList.add(sudokuGridView);
+                        });
+
+                        hints = data['hints'];
+                    }
+				});
+			} else {
+				DataStorage.createFile();
+			}
+		});
+	}
+
+    static void hideDetails() {
         sudokuList.forEach((sudoku) {
             sudoku.showThemes = false;
             sudoku.showLevels = false;
@@ -246,7 +297,7 @@ class Levels {
         });
     }
 
-    bool toShowDetails() {
+    static bool toShowDetails() {
         for (SudokuGridView sudoku in sudokuList) {
             if (sudoku.showThemes || sudoku.showLevels) return true;
         }
@@ -254,14 +305,7 @@ class Levels {
     }
 }
 
-String getDurationInTime(int seconds) {
-    final now = Duration(seconds: seconds);
-
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitMinutes = twoDigits(now.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(now.inSeconds.remainder(60));
-    return "${twoDigits(now.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
-}
+int hints = 23;
 
 String displayCell(int number) {
     if (number == 0) return '';
