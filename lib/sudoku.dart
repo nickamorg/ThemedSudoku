@@ -11,6 +11,7 @@ class SudokuGridView {
     int selectedLevelThemeIdx = -1;
     String theme = THEMES[Random().nextInt(THEMES.length)];
     int size;
+    List<int> levelThemes = List.generate(THEMES.length, (index) => 1 + Random().nextInt(THEMES.length));
 
     SudokuGridView({required this.size}) {
         sudoku = Grid(size: size);
@@ -52,6 +53,7 @@ class Grid {
     }
 
     void generate(int clearedCells) {
+        cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
         generateSudoku(0, 0);
         solvedSudoku = cloneSudoku(cells);
         emptyCellsCount = clearedCells;
@@ -104,6 +106,26 @@ class Grid {
         }
 
         return true;
+    }
+
+    bool hasConflict(int row, int col) {
+        for (int i = 0; i < size; i++) {
+            if (cells[row][col] == cells[row][i] && i != col) return true;
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (cells[row][col] == cells[i][col] && i != row) return true;
+        }
+
+        int topRow = (row ~/ height) * height;
+        int topCol = (col ~/ width) * width;
+        for (int i = topRow; i < topRow + height; i++) {
+            for (int j = topCol; j < topCol + width; j++) {
+                if (cells[row][col] == cells[i][j] && (row != i || col != j)) return true;
+            }
+        }
+
+        return false;
     }
 
     int checkBlock(int row, int col, int number) {

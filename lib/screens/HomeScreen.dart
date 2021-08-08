@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:themedsudoku/AppTheme.dart';
 import 'package:themedsudoku/library.dart';
+import 'package:themedsudoku/screens/GameScreen.dart';
 import 'package:themedsudoku/sudoku.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:numerus/numerus.dart';
@@ -49,7 +50,7 @@ class HomeState extends State<Home> {
                             splashFactory: NoSplash.splashFactory
                         ),
                         child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
+                            padding: EdgeInsets.symmetric(vertical: 10),
                             child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -73,12 +74,13 @@ class HomeState extends State<Home> {
 
     sudokuModes() {
         return CarouselSlider(
-            options: CarouselOptions(height: MediaQuery.of(context).size.height - 250),
+            options: CarouselOptions(height: MediaQuery.of(context).size.height - 200),
             items: levels.sudokuList.map((sudoku) {
                 return Stack(
                     children: [
                         Center(
                             child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                     sudokuStatus(sudoku),
                                     sudokuGrid(sudoku),
@@ -109,17 +111,16 @@ class HomeState extends State<Home> {
                 children: [
                     Padding(
                         padding: EdgeInsets.only(
-                            bottom: 10,
-                            top: 25
+                            bottom: 5,
                         ),
                         child: SvgPicture.asset(
-                            'assets/star.svg',
+                            'assets/svg/star.svg',
                             height: 40
                         )
                     ),
                     Padding(
                         padding: EdgeInsets.only(
-                            bottom: 20
+                            bottom: 5
                         ),
                         child: Text(
                             "${sudokuGridView.levelsTime.length}/${sudokuGridView.totalLevels}",
@@ -186,7 +187,7 @@ class HomeState extends State<Home> {
                                         physics: NeverScrollableScrollPhysics(),
                                         shrinkWrap: true,
                                         crossAxisCount: 3,
-                                        children: getThemes()
+                                        children: getThemes(sudokuGridView)
                                     )
                                 )
                             )
@@ -200,7 +201,7 @@ class HomeState extends State<Home> {
     sudokuTrailingText(SudokuGridView sudokuGridView) {
         return Padding(
             padding: EdgeInsets.only(
-                top: 10
+                top: 5
             ),
             child: Text(
                 sudokuGridView.showThemes ? 'Select Theme' : '${sudokuGridView.size} X ${sudokuGridView.size}',
@@ -216,53 +217,58 @@ class HomeState extends State<Home> {
     sudokuLevelsCard(SudokuGridView sudokuGridView) {
         return Visibility(
             visible: sudokuGridView.showLevels,
-            child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                child: TextButton(
-                    onPressed: () { },
-                    style: TextButton.styleFrom(
-                        enableFeedback: false,
-                        splashFactory: NoSplash.splashFactory
+            child: Center(
+                child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)
                     ),
-                    child: Column(
-                        children: [
-                            TextButton(
-                                onPressed: () {
-                                    setState(() {
-                                        levels.hideDetails();
-                                        sudokuGridView.showLevels = false;
-                                    });
-                                },
-                                style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero
-                                ),
-                                child: Column(
-                                    children: [
-                                        Padding(
-                                            padding: EdgeInsets.only(
-                                                bottom: 10,
-                                                top: 13
-                                            ),
-                                            child: SvgPicture.asset(
-                                                'assets/star.svg',
-                                                height: 40
-                                            )
-                                        ),
-                                        Text(
-                                            "${sudokuGridView.levelsTime.length}/${sudokuGridView.totalLevels}",
-                                            style: TextStyle(
-                                                fontSize: 30,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w500
-                                            )
-                                        )
-                                    ]
-                                )
+                    child: Container(
+                        height: 400,
+                        child: TextButton(
+                            onPressed: () { },
+                            style: TextButton.styleFrom(
+                                enableFeedback: false,
+                                splashFactory: NoSplash.splashFactory
                             ),
-                            sudokuLevels(sudokuGridView)
-                        ]
+                            child: Column(
+                                children: [
+                                    TextButton(
+                                        onPressed: () {
+                                            setState(() {
+                                                levels.hideDetails();
+                                                sudokuGridView.showLevels = false;
+                                            });
+                                        },
+                                        style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero
+                                        ),
+                                        child: Column(
+                                            children: [
+                                                Padding(
+                                                    padding: EdgeInsets.only(
+                                                        bottom: 5,
+                                                        top: 10.5
+                                                    ),
+                                                    child: SvgPicture.asset(
+                                                        'assets/svg/star.svg',
+                                                        height: 40
+                                                    )
+                                                ),
+                                                Text(
+                                                    "${sudokuGridView.levelsTime.length}/${sudokuGridView.totalLevels}",
+                                                    style: TextStyle(
+                                                        fontSize: 30,
+                                                        color: Colors.black,
+                                                        fontWeight: FontWeight.w500
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    ),
+                                    sudokuLevels(sudokuGridView)
+                                ]
+                            )
+                        )
                     )
                 )
             )
@@ -285,7 +291,7 @@ class HomeState extends State<Home> {
                             ),
                             child: TextButton(
                                 style: TextButton.styleFrom(
-                                    padding: EdgeInsets.all(0)
+                                    padding: EdgeInsets.zero
                                 ),
                                 onPressed: sudokuGridView.expandedLevelIdx == index ? () {
                                     print("SELECTED THEME: " + sudokuGridView.selectedLevelThemeIdx.toString());
@@ -315,19 +321,31 @@ class HomeState extends State<Home> {
         );
     }
 
-    getThemes() {
+    getThemes(SudokuGridView sudokuGridView) {
         List<Widget> themes = [];
 
         for (int i = 0; i < THEMES.length; i++) {
             int idx = 1 + Random().nextInt(THEMES.length);
 
             themes.add(
-                Padding(
-                    padding: EdgeInsets.all(15),
-                    child: Container(
-                        child: SvgPicture.asset(
-                            'assets/categories/${THEMES[i]}/$idx.svg',
-                            height: 40
+                TextButton(
+                    onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => GameScreen(size: sudokuGridView.size, level: sudokuGridView.levelsTime.length + 1, themeIdx: i)
+                            )
+                        ).then((value) {
+                            setState(() { });
+                        });
+                    },
+                    child: Padding(
+                        padding: EdgeInsets.all(5),
+                        child: Container(
+                            child: SvgPicture.asset(
+                                'assets/categories/${THEMES[i]}/$idx.svg',
+                                height: 50,
+                            )
                         )
                     )
                 )
@@ -348,7 +366,7 @@ class HomeState extends State<Home> {
                         perspective: 0.01,
                         itemExtent: 50,
                         childDelegate: ListWheelChildLoopingListDelegate(
-                            children: getLevelThemes()
+                            children: getLevelThemes(sudokuGridView)
                         ),
                         onSelectedItemChanged: (index) {
                             setState(() {
@@ -404,11 +422,10 @@ class HomeState extends State<Home> {
         );
     }
 
-    getLevelThemes() {
+    getLevelThemes(SudokuGridView sudokuGridView) {
         List<Widget> themes = [];
 
         for (int i = 0; i < THEMES.length; i++) {
-            int idx = 1 + Random().nextInt(THEMES.length);
 
             themes.add(
                 RotatedBox(
@@ -417,7 +434,7 @@ class HomeState extends State<Home> {
                         padding: EdgeInsets.all(10),
                         child: Container(
                             child: SvgPicture.asset(
-                                'assets/categories/${THEMES[i]}/$idx.svg',
+                                'assets/categories/${THEMES[i]}/${sudokuGridView.levelThemes[i]}.svg',
                                 height: 40
                             )
                         )
@@ -507,7 +524,7 @@ class RatingCard extends StatelessWidget {
                                     )
                                 ),
                                 SvgPicture.asset(
-                                    'assets/like.svg',
+                                    'assets/svg/like.svg',
                                     height: 40
                                 )
                             ]
