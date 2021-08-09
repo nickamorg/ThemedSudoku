@@ -1,4 +1,4 @@
-package com.zirconworks.themedsudoku
+package com.zirconworks.thematicsudoku
 
 import io.flutter.embedding.android.FlutterActivity
 

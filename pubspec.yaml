@@ -1,5 +1,5 @@
-name: themedsudoku
-description: A Themed Sudoku Android Application.
+name: thematicsudoku
+description: A Thematic Sudoku Android Application.
 
 publish_to: 'none'
 
@@ -47,6 +47,28 @@ flutter:
     - assets/svg/hint.svg
     - assets/svg/options_bg.svg
 
+    # Colors
+    - assets/categories/colors/1.svg
+    - assets/categories/colors/2.svg
+    - assets/categories/colors/3.svg
+    - assets/categories/colors/4.svg
+    - assets/categories/colors/5.svg
+    - assets/categories/colors/6.svg
+    - assets/categories/colors/7.svg
+    - assets/categories/colors/8.svg
+    - assets/categories/colors/9.svg
+
+    # Elements
+    - assets/categories/elements/1.svg
+    - assets/categories/elements/2.svg
+    - assets/categories/elements/3.svg
+    - assets/categories/elements/4.svg
+    - assets/categories/elements/5.svg
+    - assets/categories/elements/6.svg
+    - assets/categories/elements/7.svg
+    - assets/categories/elements/8.svg
+    - assets/categories/elements/9.svg
+
     # Emoji
     - assets/categories/emoji/1.svg
     - assets/categories/emoji/2.svg
@@ -57,17 +79,6 @@ flutter:
     - assets/categories/emoji/7.svg
     - assets/categories/emoji/8.svg
     - assets/categories/emoji/9.svg
-
-    # Vegetables
-    - assets/categories/vegetables/1.svg
-    - assets/categories/vegetables/2.svg
-    - assets/categories/vegetables/3.svg
-    - assets/categories/vegetables/4.svg
-    - assets/categories/vegetables/5.svg
-    - assets/categories/vegetables/6.svg
-    - assets/categories/vegetables/7.svg
-    - assets/categories/vegetables/8.svg
-    - assets/categories/vegetables/9.svg
 
     # Fruit
     - assets/categories/fruit/1.svg
@@ -80,3 +91,57 @@ flutter:
     - assets/categories/fruit/8.svg
     - assets/categories/fruit/9.svg
 
+    # Numbers
+    - assets/categories/numbers/1.svg
+    - assets/categories/numbers/2.svg
+    - assets/categories/numbers/3.svg
+    - assets/categories/numbers/4.svg
+    - assets/categories/numbers/5.svg
+    - assets/categories/numbers/6.svg
+    - assets/categories/numbers/7.svg
+    - assets/categories/numbers/8.svg
+    - assets/categories/numbers/9.svg
+
+    # Planets
+    - assets/categories/planets/1.svg
+    - assets/categories/planets/2.svg
+    - assets/categories/planets/3.svg
+    - assets/categories/planets/4.svg
+    - assets/categories/planets/5.svg
+    - assets/categories/planets/6.svg
+    - assets/categories/planets/7.svg
+    - assets/categories/planets/8.svg
+    - assets/categories/planets/9.svg
+
+    # Sweets
+    - assets/categories/sweets/1.svg
+    - assets/categories/sweets/2.svg
+    - assets/categories/sweets/3.svg
+    - assets/categories/sweets/4.svg
+    - assets/categories/sweets/5.svg
+    - assets/categories/sweets/6.svg
+    - assets/categories/sweets/7.svg
+    - assets/categories/sweets/8.svg
+    - assets/categories/sweets/9.svg
+
+    # Vegetables
+    - assets/categories/vegetables/1.svg
+    - assets/categories/vegetables/2.svg
+    - assets/categories/vegetables/3.svg
+    - assets/categories/vegetables/4.svg
+    - assets/categories/vegetables/5.svg
+    - assets/categories/vegetables/6.svg
+    - assets/categories/vegetables/7.svg
+    - assets/categories/vegetables/8.svg
+    - assets/categories/vegetables/9.svg
+
+    # Zombies
+    - assets/categories/zombies/1.svg
+    - assets/categories/zombies/2.svg
+    - assets/categories/zombies/3.svg
+    - assets/categories/zombies/4.svg
+    - assets/categories/zombies/5.svg
+    - assets/categories/zombies/6.svg
+    - assets/categories/zombies/7.svg
+    - assets/categories/zombies/8.svg
+    - assets/categories/zombies/9.svg

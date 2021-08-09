@@ -1,4 +1,4 @@
-# Themed Sudoku
+# Thematic Sudoku
 
 A new Flutter project.
 

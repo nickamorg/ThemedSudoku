@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:themedsudoku/AppTheme.dart';
-import 'package:themedsudoku/AudioPlayer.dart';
-import 'package:themedsudoku/library.dart';
-import 'package:themedsudoku/sudoku.dart';
+import 'package:thematicsudoku/AppTheme.dart';
+import 'package:thematicsudoku/AudioPlayer.dart';
+import 'package:thematicsudoku/library.dart';
+import 'package:thematicsudoku/sudoku.dart';
 import 'dart:async';
 
 class GameScreen extends StatelessWidget {
@@ -96,6 +96,8 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                                 onDoubleTap: () {
                                                                     setState(() {
                                                                         selectedOption = 0;
+                                                                        timer!.cancel();
+                                                                        startTimer();
                                                                         grid.generate(level);
                                                                     });
                                                                 },
@@ -334,11 +336,14 @@ class GameState extends State<Game> with TickerProviderStateMixin {
     validateGrid() {
         isSolved = grid.isValidSolution();
         if (isSolved) {
-            AudioPlayer.play(AudioList.WIN);
-            if (level - 1 >= Levels.getSudokuBySize(size)!.levelsTime.length)
-            Levels.getSudokuBySize(size)!.levelsTime.add(time);
-            Levels.storeData();
             timer!.cancel();
+            AudioPlayer.play(AudioList.WIN);
+            if (level - 1 >= Levels.getSudokuBySize(size)!.levelsTime.length) {
+                Levels.getSudokuBySize(size)!.levelsTime.add(time);
+            } else {
+                Levels.getSudokuBySize(size)!.levelsTime[level - 1] = time;
+            }
+            Levels.storeData();
 
             Future.delayed(Duration(milliseconds: 1000), () {
                 Navigator.of(context).pop();

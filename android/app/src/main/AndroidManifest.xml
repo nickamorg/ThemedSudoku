@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zirconworks.themedsudoku">
+    package="com.zirconworks.thematicsudoku">
    <application
-        android:label="Themed Sudoku"
+        android:label="Thematic Sudoku"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -1,6 +1,6 @@
 {
-    "name": "Themed Sudoku",
-    "short_name": "Themed Sudoku",
+    "name": "Thematic Sudoku",
+    "short_name": "Thematic Sudoku",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

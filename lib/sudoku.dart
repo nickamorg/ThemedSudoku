@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:themedsudoku/DataStorage.dart';
-import 'package:themedsudoku/library.dart';
+import 'package:thematicsudoku/DataStorage.dart';
+import 'package:thematicsudoku/library.dart';
 
 class SudokuGridView {
     Grid sudoku = Grid(size: 6);
@@ -17,7 +17,7 @@ class SudokuGridView {
 
     SudokuGridView({required this.size}) {
         sudoku = Grid(size: size);
-        totalLevels = size == 4 ? 10 : size == 6 ? 20 : 30;
+        totalLevels = size * size;
     }
 
     double size2BorderSize() {
@@ -237,6 +237,7 @@ class Levels {
     static Future<void> init() async {
         sudokuList.add(SudokuGridView(size: 4));
         sudokuList.add(SudokuGridView(size: 6));
+        sudokuList.add(SudokuGridView(size: 8));
         sudokuList.add(SudokuGridView(size: 9));
 
         sudokuList.forEach((sudokuGridView) {
@@ -277,7 +278,6 @@ class Levels {
                             SudokuGridView? sudokuGridView = getSudokuBySize(int.parse(levelSize));
                             sudokuGridView!.levelsTime = levelData['time'].cast<int>();
                             sudokuGridView.sudoku.generate(sudokuGridView.levelsTime.length + 1);
-                            sudokuList.add(sudokuGridView);
                         });
 
                         hints = data['hints'];

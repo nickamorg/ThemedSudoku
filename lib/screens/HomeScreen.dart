@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:launch_review/launch_review.dart';
-import 'package:themedsudoku/AppTheme.dart';
-import 'package:themedsudoku/library.dart';
-import 'package:themedsudoku/screens/GameScreen.dart';
-import 'package:themedsudoku/sudoku.dart';
+import 'package:thematicsudoku/AppTheme.dart';
+import 'package:thematicsudoku/library.dart';
+import 'package:thematicsudoku/screens/GameScreen.dart';
+import 'package:thematicsudoku/sudoku.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:numerus/numerus.dart';
 
@@ -95,10 +95,14 @@ class HomeState extends State<Home> {
 
     sudokuStatus(SudokuGridView sudokuGridView) {
         return TextButton(
-            onPressed: () {
+            onPressed: sudokuGridView.showThemes ? null : () {
                 setState(() {
                     Levels.hideDetails();
-                    sudokuGridView.showLevels = true;
+                    if (sudokuGridView.levelsTime.length == 0 || sudokuGridView.levelsTime.length == sudokuGridView.totalLevels) {
+                        sudokuGridView.showThemes = true;
+                    } else {
+                        sudokuGridView.showLevels = true;
+                    }
                 });
             },
             style: TextButton.styleFrom(
@@ -524,7 +528,7 @@ class RatingCard extends StatelessWidget {
                 height: 60,
                 child: TextButton(
                     onPressed: () => {
-                       LaunchReview.launch(androidAppId: 'com.zirconworks.themedsudoku')
+                       LaunchReview.launch(androidAppId: 'com.zirconworks.thematicsudoku')
                     },
                     child: Center(
                         child: Row(
