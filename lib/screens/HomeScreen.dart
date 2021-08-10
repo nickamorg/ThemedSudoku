@@ -21,6 +21,9 @@ class HomeScreen extends StatelessWidget {
 }
 
 class HomeState extends State<Home> {
+    final Shader linearGradient = LinearGradient(
+        colors: [Colors.red, Colors.blue],
+    ).createShader(Rect.fromLTWH(100, 35, 200, 70));
 
     @override
     void initState() {
@@ -52,12 +55,24 @@ class HomeState extends State<Home> {
                             child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                    Text(
-                                        'SUDOKU',
-                                        style: TextStyle(
-                                            fontSize: 70,
-                                            color: Colors.black
-                                        )
+                                    Column(
+                                        children: [
+                                            Text(
+                                                'SUDOKU',
+                                                style: TextStyle(
+                                                    fontSize: 60,
+                                                    foreground: Paint()..shader = linearGradient
+                                                )
+                                            ),
+                                            Text(
+                                                'Thematic',
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontStyle: FontStyle.italic,
+                                                    foreground: Paint()..shader = linearGradient
+                                                )
+                                            )
+                                        ]
                                     ),
                                     sudokuModes(),
                                     RatingCard()

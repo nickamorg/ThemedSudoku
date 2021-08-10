@@ -33,6 +33,7 @@ class Grid {
     int width = 2;
     List<Cell> emptyCells = [];
     int emptyCellsCount = 0;
+    List<Cell> revealedCells = [];
 
     Grid({required this.size}) {
         cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
@@ -63,6 +64,7 @@ class Grid {
         generateSudoku(0, 0);
         solvedSudoku = cloneSudoku(cells);
         emptyCellsCount = clearedCells;
+        revealedCells = [];
         clearCells(clearedCells);
     }
 
@@ -116,18 +118,18 @@ class Grid {
 
     bool hasConflict(int row, int col) {
         for (int i = 0; i < size; i++) {
-            if (cells[row][col] == cells[row][i] && i != col) return true;
+            if (cells[row][col] != 0 && cells[row][col] == cells[row][i] && i != col) return true;
         }
 
         for (int i = 0; i < size; i++) {
-            if (cells[row][col] == cells[i][col] && i != row) return true;
+            if (cells[row][col] != 0 &&  cells[row][col] == cells[i][col] && i != row) return true;
         }
 
         int topRow = (row ~/ height) * height;
         int topCol = (col ~/ width) * width;
         for (int i = topRow; i < topRow + height; i++) {
             for (int j = topCol; j < topCol + width; j++) {
-                if (cells[row][col] == cells[i][j] && (row != i || col != j)) return true;
+                if (cells[row][col] != 0 &&  cells[row][col] == cells[i][j] && (row != i || col != j)) return true;
             }
         }
 
@@ -222,6 +224,55 @@ class Grid {
 
         return filled == size * size;
     }
+
+    int remainingRowCells(int row) {
+        int count = 0;
+
+        for (int col = 0; col < size; col++) {
+            if (cells[row][col] == 0) count++;
+        }
+
+        return count;
+    }
+
+    int remainingColCells(int col) {
+        int count = 0;
+
+        for (int row = 0; row < size; row++) {
+            if (cells[row][col] == 0) count++;
+        }
+
+        return count;
+    }
+
+    void revealRow(int row) {
+        for (int col = 0; col < size; col++) {
+            revealCell(row, col);
+        }
+    }
+
+    void revealCol(int col) {
+        for (int row = 0; row < size; row++) {
+            revealCell(row, col);
+        }
+    }
+
+    void revealCell(int row, int col) {
+        cells[row][col] = solvedSudoku[row][col];
+        Cell newCell = Cell(row: row, col: col);
+        if (emptyCells.contains(newCell)) {
+            emptyCells.remove(newCell);
+            revealedCells.add(newCell);
+        }
+    }
+
+    bool isReplaceable(int row, int col) {
+        for (Cell cell in emptyCells) {
+            if (cell.row == row && cell.col == col) return true;
+        }
+
+        return false;
+    }
 }
 
 class Cell {
@@ -229,6 +280,10 @@ class Cell {
     int col;
 
     Cell({required this.row, required this.col});
+
+    bool operator ==(cords) => cords is Cell && row == cords.row && col == cords.col;
+
+    int get hashCode => row.hashCode + col.hashCode;
 }
 
 class Levels {

@@ -37,6 +37,7 @@ flutter:
     - assets/audio/win.mp3
 
     # PNG
+    - assets/png/hint.png
     - assets/png/option_bg.png
 
     # SVG
@@ -46,6 +47,7 @@ flutter:
     - assets/svg/back.svg
     - assets/svg/hint.svg
     - assets/svg/options_bg.svg
+    - assets/svg/options_small_bg.svg
 
     # Colors
     - assets/categories/colors/1.svg

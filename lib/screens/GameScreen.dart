@@ -1,9 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:thematicsudoku/AppTheme.dart';
 import 'package:thematicsudoku/AudioPlayer.dart';
 import 'package:thematicsudoku/library.dart';
 import 'package:thematicsudoku/sudoku.dart';
+import 'package:thematicsudoku/AdManager.dart';
 import 'dart:async';
 
 class GameScreen extends StatelessWidget {
@@ -119,7 +123,9 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                     )
                                                 ),
                                                 TextButton(
-                                                    onPressed: () => { },
+                                                    onPressed: () => {
+                                                        showHintsDialog(context)
+                                                    },
                                                     style: TextButton.styleFrom(
                                                         padding: EdgeInsets.zero,
                                                         splashFactory: NoSplash.splashFactory
@@ -149,12 +155,12 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                         )
                                     ),
                                     Container(
-                                        height: 130,
+                                        height: grid.size > 5 ? 130 : 80,
                                         width: MediaQuery.of(context).size.width,
                                         child: Stack(
                                             children: [
                                                 SvgPicture.asset(
-                                                    'assets/svg/options_bg.svg',
+                                                    'assets/svg/${grid.size > 5 ? 'options_bg' : 'options_small_bg'}.svg',
                                                     alignment: Alignment.center,
                                                     width: MediaQuery.of(context).size.width,
                                                     height: MediaQuery.of(context).size.height,
@@ -217,12 +223,14 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                 firstRow.add(optionButton(i));
                 if ( i + 1 <= size) secondRow.add(optionButton(i + 1));
             }
+            if(size % 2 == 0) firstRow.add(SizedBox(width: 15));
             rows.add(
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: firstRow
                 )
             );
+            if(size % 2 == 0) secondRow = []..add(SizedBox(width: 15))..addAll(secondRow);
             rows.add(
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -240,6 +248,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                 padding: EdgeInsets.symmetric(vertical: selectedOption == idx ? 0 : 10)
             ),
             onPressed: () {
+                grid.revealedCells = [];
                 if (selectedOption == idx) {
                     selectedOption = 0;
                 } else {
@@ -279,12 +288,14 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                     AbsorbPointer(
                         absorbing: isSolved,
                         child: GestureDetector(
-                            onDoubleTap: !isReplaceable(i, j) ? null : () {
+                            onDoubleTap: !grid.isReplaceable(i, j) ? null : () {
                                 setState(() {
                                     grid.cells[i][j] = 0;
+                                    grid.revealedCells = [];
                                 });
                             },
-                            onTap: !isReplaceable(i, j) ? null : () {
+                            onTap: !grid.isReplaceable(i, j) ? null : () {
+                                grid.revealedCells = [];
                                 if (grid.cells[i][j] == selectedOption) {
                                     grid.cells[i][j] = 0;
                                 } else {
@@ -294,21 +305,19 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                 setState(() { });
                             },
                             child: Container(
-                                padding: EdgeInsets.all(6),
-                                child: Center(
-                                    child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Padding(
-                                            padding: EdgeInsets.all(1),
-                                            child: sudoku.cells[i][j] == 0 ? Text('') : SvgPicture.asset(
-                                                'assets/categories/${THEMES[themeIdx]}/${sudoku.cells[i][j]}.svg',
-                                                height: 80,
-                                            )
+                                padding: EdgeInsets.all(6 + (isBorder(i, j, sudoku.size) ? isCorner(i, j, sudoku) ? 2 : 1 : (((i % sudoku.height == 0 || j % sudoku.width == 0)) ? 1 : 2.5))),
+                                child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Padding(
+                                        padding: EdgeInsets.all(1),
+                                        child: sudoku.cells[i][j] == 0 ? Text('') : SvgPicture.asset(
+                                            'assets/categories/${THEMES[themeIdx]}/${sudoku.cells[i][j]}.svg',
+                                            height: 80,
                                         )
                                     )
                                 ),
                                 decoration: BoxDecoration(
-                                    color: grid.cells[i][j] != 0 && grid.hasConflict(i, j) ? isReplaceable(i, j) ? Colors.red : AppTheme.WRONG_OPT_NOT_REPL : selectedOption != 0 && selectedOption == grid.cells[i][j] ? AppTheme.SELECTED_OPT : isReplaceable(i, j) ? AppTheme.REPLACEABLE : Colors.white,
+                                    color: grid.revealedCells.contains(Cell(row: i, col: j)) ? Colors.green : grid.cells[i][j] != 0 && grid.hasConflict(i, j) ? grid.isReplaceable(i, j) ? Colors.red : AppTheme.WRONG_OPT_NOT_REPL : selectedOption != 0 && selectedOption == grid.cells[i][j] ? AppTheme.SELECTED_OPT : grid.isReplaceable(i, j) ? AppTheme.REPLACEABLE : Colors.white,
                                     shape: BoxShape.rectangle,
                                     borderRadius: isCorner(i, j, sudoku) ? BorderRadius.only(
                                         topLeft: Radius.circular(i == 0 && j == 0 ? 10 : 0),
@@ -340,8 +349,16 @@ class GameState extends State<Game> with TickerProviderStateMixin {
             AudioPlayer.play(AudioList.WIN);
             if (level - 1 >= Levels.getSudokuBySize(size)!.levelsTime.length) {
                 Levels.getSudokuBySize(size)!.levelsTime.add(time);
+                int earnedHints = 1 + level ~/ 10;
+                hints += earnedHints;
+
+                final snackBar = SnackBar(
+                    duration: Duration(milliseconds: 500),
+                    content: Text("+$earnedHints hint${earnedHints > 1 ? 's' : ''}")
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
             } else {
-                Levels.getSudokuBySize(size)!.levelsTime[level - 1] = time;
+                if (time < Levels.getSudokuBySize(size)!.levelsTime[level - 1]) Levels.getSudokuBySize(size)!.levelsTime[level - 1] = time;
             }
             Levels.storeData();
 
@@ -351,17 +368,272 @@ class GameState extends State<Game> with TickerProviderStateMixin {
         }
     }
 
-    isReplaceable(int row, int col) {
-        for (Cell cell in grid.emptyCells) {
-            if (cell.row == row && cell.col == col) return true;
-        }
-
-        return false;
-    }
-
     isCorner(int row, int col, Grid sudoku) {
         return (row == 0 && col == 0) || (row == 0 && col == sudoku.size - 1) ||
             (row == sudoku.size - 1 && col == 0) || (row == sudoku.size - 1 && col == sudoku.size - 1);
+    }
+
+    isBorder(int row, int col, size) {
+        return row == 0 || col == 0 || row == size - 1 || col == size - 1;
+    }
+
+    Future<void> showHintsDialog(BuildContext context) {
+        return showGeneralDialog(
+            context: context,
+            barrierDismissible: true,
+            barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+            barrierColor: Colors.black54,
+            transitionDuration: Duration(milliseconds: 200),
+            pageBuilder: (BuildContext buildContext, Animation animation, Animation secondaryAnimation) {
+                return WillPopScope(
+                    onWillPop: () {
+                        return Future.value(true);
+                    },
+                    child: StatefulBuilder(
+                        builder: (context, setState) {
+                            Widget hintButton(int minHints, String txt, Function action) {
+                                return Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 5),
+                                    child: Opacity(
+                                        opacity: hints >= minHints ? 1 : 0.6,
+                                        child: TextButton(
+                                            onPressed: hints >= minHints ? () {
+                                                // hints -= minHints; 
+                                                action();
+                                                Levels.storeData();
+                                                Navigator.pop(context);
+                                            } : null,
+                                            child: hintContainer(txt, null, minHints.toString())
+                                        )
+                                    )
+                                );
+                            }
+
+                            Widget getModeHintsButton() {
+                                return grid.isSudokuFilled() ? SizedBox.shrink() : Column(
+                                    children: [
+                                        hintButton(1, 'Reveal Cell', revealCell),
+                                        hintButton(size - 1, 'Reveal Block', revealBlock),
+                                        hintButton(size + 1, 'Reveal ${themeTrim(themeIdx)}', revealOption)
+                                    ]
+                                );
+                            }
+
+                            return Align(
+                                alignment: Alignment.topCenter,
+                                child: Padding(
+                                    padding: EdgeInsets.fromLTRB(15, 22, 15, 0),
+                                    child: Material(
+                                        type: MaterialType.transparency,
+                                        child: Container(
+                                            width: MediaQuery.of(context).size.width,
+                                            height: grid.isSudokuFilled() ? hasConflict() ? 270 : 170 : 500,
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(15),
+                                                color: AppTheme.MAIN_COLOR
+                                            ),
+                                            child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                    Row(
+                                                        mainAxisAlignment: MainAxisAlignment.end,
+                                                        children: [
+                                                            Container(
+                                                                padding: EdgeInsets.fromLTRB(15, 5, 15, 5),
+                                                                height: 35,
+                                                                child: Row(
+                                                                    children: [
+                                                                        SizedBox(
+                                                                            width: 20,
+                                                                            child: Image(image: AssetImage('assets/png/hint.png'), fit: BoxFit.contain)
+                                                                        ),
+                                                                        SizedBox(
+                                                                            width: 10
+                                                                        ),
+                                                                        Text(
+                                                                            hints.toString(),
+                                                                            style: TextStyle(
+                                                                                fontFamily: 'Segoe UI',
+                                                                                fontSize: 20,
+                                                                                color: Color(0xFFFFD517),
+                                                                                fontWeight: FontWeight.w700,
+                                                                            )
+                                                                        )
+                                                                    ]
+                                                                ),
+                                                                decoration: BoxDecoration(
+                                                                    color: Colors.white,
+                                                                    shape: BoxShape.rectangle,
+                                                                    borderRadius: BorderRadius.all(Radius.circular(30))
+                                                                )
+                                                            )
+                                                        ]
+                                                    ),
+                                                    !hasConflict() ? SizedBox.shrink() : Padding(
+                                                        padding: EdgeInsets.all(15),
+                                                        child: hintButton(0, 'Clear Red Cells', clearWrongPlaced),
+                                                    ),
+                                                    Padding(
+                                                        padding: EdgeInsets.all(15),
+                                                        child: getModeHintsButton()
+                                                    ),
+                                                    Padding(
+                                                        padding: EdgeInsets.all(15),
+                                                        child: TextButton(
+                                                            onPressed: () {
+                                                                setState(() {
+                                                                    getReward(RewardedAd rewardedAd, RewardItem rewardItem) {
+                                                                        hints += size + 1;
+                                                                        Levels.storeData();
+                                                                    }
+                                                                    AdManager.showRewardedAd(getReward);
+                                                                });
+                                                            },
+                                                            child: hintContainer(null, Icons.video_call, '+${size + 1}')
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    )
+                                )
+                            );
+                        }
+                    )
+                );
+            }
+        ).then((value) => setState(() { }));
+    }
+
+    revealCell() {
+        int row = 0;
+        int col = 0;
+        do {
+            row = Random().nextInt(size);
+            col = Random().nextInt(size);
+        } while (grid.cells[row][col] != 0);
+
+        grid.cells[row][col] = grid.solvedSudoku[row][col];
+        grid.emptyCells.remove(Cell(row: row, col: col));
+        grid.revealedCells.add(Cell(row: row, col: col));
+    }
+
+    revealOption() {
+        int count = size;
+
+        do {
+            count = size;
+            int idx = 1 + Random().nextInt(size);
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (grid.cells[i][j] == idx) count--;
+                }
+            }
+
+            if (count > 0) {
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        if (grid.solvedSudoku[i][j] == idx) grid.cells[i][j] = idx;
+                    }
+                }
+                break;
+            }
+        } while (true);
+    }
+
+    revealBlock() {
+        int choice = Random().nextInt(2);
+
+        if (choice == 0) {
+            int row = 0;
+            do {
+                row = Random().nextInt(size);
+            } while (grid.remainingRowCells(row) == 0);
+            grid.revealRow(row);
+        } else if (choice == 1) {
+            int col = 0;
+            do {
+                col = Random().nextInt(size);
+            } while (grid.remainingColCells(col) == 0);
+            grid.revealCol(col);
+        }
+    }
+
+    clearWrongPlaced() {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (grid.hasConflict(i, j) && grid.isReplaceable(i, j)) {
+                    grid.cells[i][j] = 0;
+                }
+            }
+        }
+    }
+
+    bool hasConflict() {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (grid.hasConflict(i, j)) return true;
+            }
+        }
+        return false;
+    }
+
+    
+
+    Widget hintContainer(String? txt, IconData? icon, String hints) {
+        return Container(
+            height: 50,
+            width: double.infinity,
+            alignment: Alignment.center,
+            child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                        txt != null ?
+                        Text(
+                            txt,
+                            style: TextStyle(
+                                fontFamily: 'Segoe UI',
+                                fontSize: 20,
+                                color: Color(0xFF876603),
+                                fontWeight: FontWeight.w700
+                            )
+                        )
+                        :
+                        Icon(
+                            icon,
+                            color: Color(0xFF876603),
+                            size: 40,
+                        ),
+                        Row(
+                            children: [
+                                Text(
+                                    hints,
+                                    style: TextStyle(
+                                        fontFamily: 'Segoe UI',
+                                        fontSize: 20,
+                                        color: Color(0xFFFFD517),
+                                        fontWeight: FontWeight.w700,
+                                    ),
+                                    textAlign: TextAlign.center
+                                ),
+                                SizedBox( width: 5 ),
+                                SizedBox(
+                                    width: 20,
+                                    child: Image(image: AssetImage('assets/png/hint.png'), fit: BoxFit.contain)
+                                ),
+                            ]
+                        )
+                    ]
+                )
+            ),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.all(Radius.circular(30))
+            )
+        );
     }
 }
 

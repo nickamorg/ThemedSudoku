@@ -8,3 +8,9 @@ String getDurationInTime(int seconds) {
     String twoDigitSeconds = twoDigits(now.inSeconds.remainder(60));
     return '${twoDigits(now.inHours)}:$twoDigitMinutes:$twoDigitSeconds';
 }
+
+String themeTrim(idx) {
+    String str = THEMES[idx][0].toUpperCase() + THEMES[idx].substring(1);
+    if (str[str.length - 1] == 's') return str.substring(0, str.length - 1);
+    return str;
+}
