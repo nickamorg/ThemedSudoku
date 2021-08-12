@@ -1,4 +1,4 @@
-const List<String> THEMES = ['colors', 'elements', 'emoji', 'fruit', 'numbers', 'planets', 'sweets', 'vegetables', 'zombies'];
+const List<String> THEMES = ['numbers', 'colors', 'elements', 'emoji', 'fruit', 'planets', 'sweets', 'vegetables', 'zombies'];
 
 String getDurationInTime(int seconds) {
     final now = Duration(seconds: seconds);

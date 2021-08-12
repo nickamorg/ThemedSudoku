@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:launch_review/launch_review.dart';
+import 'package:thematicsudoku/AdManager.dart';
 import 'package:thematicsudoku/AppTheme.dart';
 import 'package:thematicsudoku/library.dart';
 import 'package:thematicsudoku/screens/GameScreen.dart';
@@ -29,7 +30,8 @@ class HomeState extends State<Home> {
     void initState() {
         super.initState();
         Levels.init().then((value) => setState((){ }));
-        // AdManager.initGoogleMobileAds();
+        AdManager.initGoogleMobileAds();
+        AdManager.loadInterstitialAd();
     }
 
 	@override
@@ -113,7 +115,7 @@ class HomeState extends State<Home> {
             onPressed: sudokuGridView.showThemes ? null : () {
                 setState(() {
                     Levels.hideDetails();
-                    if (sudokuGridView.levelsTime.length == 0 || sudokuGridView.levelsTime.length == sudokuGridView.totalLevels) {
+                    if (sudokuGridView.levelsTime.length == 0) {
                         sudokuGridView.showThemes = true;
                     } else {
                         sudokuGridView.showLevels = true;
@@ -313,14 +315,29 @@ class HomeState extends State<Home> {
                                     padding: EdgeInsets.zero
                                 ),
                                 onPressed: sudokuGridView.expandedLevelIdx == index ? () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => GameScreen(size: sudokuGridView.size, level: index + 1, themeIdx: sudokuGridView.selectedLevelThemeIdx)
-                                        )
-                                    ).then((value) {
-                                        popScreenRefresh();
-                                    });
+                                    if (Random().nextInt(5) == 2) {
+                                        AdManager.showInterstitialAd();
+
+                                        Future.delayed(Duration(milliseconds: 2000), () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => GameScreen(size: sudokuGridView.size, level: index + 1, themeIdx: sudokuGridView.selectedLevelThemeIdx)
+                                                )
+                                            ).then((value) {
+                                                popScreenRefresh();
+                                            });
+                                        });
+                                    } else {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => GameScreen(size: sudokuGridView.size, level: index + 1, themeIdx: sudokuGridView.selectedLevelThemeIdx)
+                                            )
+                                        ).then((value) {
+                                            popScreenRefresh();
+                                        });
+                                    }
                                 } : () { 
                                     setState(() {
                                         sudokuGridView.expandedLevelIdx = index;
@@ -355,14 +372,29 @@ class HomeState extends State<Home> {
             themes.add(
                 TextButton(
                     onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => GameScreen(size: sudokuGridView.size, level: sudokuGridView.levelsTime.length + 1, themeIdx: i)
-                            )
-                        ).then((value) {
-                            popScreenRefresh();
-                        });
+                        if (Random().nextInt(5) == 2) {
+                            AdManager.showInterstitialAd();
+
+                            Future.delayed(Duration(milliseconds: 2000), () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => GameScreen(size: sudokuGridView.size, level: sudokuGridView.levelsTime.length + 1, themeIdx: i)
+                                    )
+                                ).then((value) {
+                                    popScreenRefresh();
+                                });
+                            });
+                        } else {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => GameScreen(size: sudokuGridView.size, level: sudokuGridView.levelsTime.length + 1, themeIdx: i)
+                                )
+                            ).then((value) {
+                                popScreenRefresh();
+                            });
+                        }
                     },
                     child: Padding(
                         padding: EdgeInsets.all(5),

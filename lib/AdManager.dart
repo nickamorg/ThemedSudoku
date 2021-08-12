@@ -10,7 +10,8 @@ class AdManager {
 
 	static String get appId {
 		if (Platform.isAndroid) {
-			return 'ca-app-pub-3940256099942544~3347511713'; // Test
+			// return 'ca-app-pub-3940256099942544~3347511713'; // Test
+            return 'ca-app-pub-1936572611542740~7459633834';
 		} else {
 			throw UnsupportedError('Unsupported platform');
 		}
@@ -18,7 +19,8 @@ class AdManager {
 
     static String get interstitialAdUnitId {
         if (Platform.isAndroid) {
-            return 'ca-app-pub-3940256099942544/1033173712'; // Test
+            // return 'ca-app-pub-3940256099942544/1033173712'; // Test
+            return 'ca-app-pub-1936572611542740/2562530376';
         } else {
             throw new UnsupportedError('Unsupported platform');
         }
@@ -26,7 +28,8 @@ class AdManager {
 
     static String get rewardedAdUnitId {
         if (Platform.isAndroid) {
-            return 'ca-app-pub-3940256099942544/5224354917'; // Test
+            // return 'ca-app-pub-3940256099942544/5224354917'; // Test
+            return 'ca-app-pub-1936572611542740/8288951032';
         } else {
             throw new UnsupportedError('Unsupported platform');
         }

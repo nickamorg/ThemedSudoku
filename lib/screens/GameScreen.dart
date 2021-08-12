@@ -32,16 +32,19 @@ class GameState extends State<Game> with TickerProviderStateMixin {
     Timer? timer;
     int time = 0;
     bool isSolved = false;
+    bool isAmbiguous = false;
 
     @override
 	void initState() {
 		super.initState();
+        AdManager.loadRewardedAd();
 
         size = widget.size;
         level = widget.level;
         themeIdx = widget.themeIdx;
         grid = Grid(size: size);
         grid.generate(level);
+        isAmbiguous = grid.isSolutionAmbiguous();
 
         startTimer();
     }
@@ -103,6 +106,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                                         timer!.cancel();
                                                                         startTimer();
                                                                         grid.generate(level);
+                                                                        isAmbiguous = grid.isSolutionAmbiguous();
                                                                     });
                                                                 },
                                                                 child: SvgPicture.asset(
@@ -398,8 +402,9 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                         opacity: hints >= minHints ? 1 : 0.6,
                                         child: TextButton(
                                             onPressed: hints >= minHints ? () {
-                                                // hints -= minHints; 
+                                                hints -= minHints; 
                                                 action();
+                                                validateGrid();
                                                 Levels.storeData();
                                                 Navigator.pop(context);
                                             } : null,
@@ -410,7 +415,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                             }
 
                             Widget getModeHintsButton() {
-                                return grid.isSudokuFilled() ? SizedBox.shrink() : Column(
+                                return Column(
                                     children: [
                                         hintButton(1, 'Reveal Cell', revealCell),
                                         hintButton(size - 1, 'Reveal Block', revealBlock),
@@ -427,7 +432,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                         type: MaterialType.transparency,
                                         child: Container(
                                             width: MediaQuery.of(context).size.width,
-                                            height: grid.isSudokuFilled() ? hasConflict() ? 270 : 170 : 500,
+                                            height: (isAmbiguous ? 60 : 0) + (isAmbiguous || grid.isSudokuFilled() ? hasConflict() ? 240 : 140 : 500),
                                             decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(15),
                                                 color: AppTheme.MAIN_COLOR
@@ -469,11 +474,15 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                                                             )
                                                         ]
                                                     ),
+                                                    !isAmbiguous ? SizedBox.shrink() : Padding(
+                                                        padding: EdgeInsets.symmetric(horizontal: 20),
+                                                        child: Text("Solution is ambiguous. Currently there isn't any hint. You have to create that sudoku, by providing one of the correct solutions.")
+                                                    ),
                                                     !hasConflict() ? SizedBox.shrink() : Padding(
                                                         padding: EdgeInsets.all(15),
                                                         child: hintButton(0, 'Clear Red Cells', clearWrongPlaced),
                                                     ),
-                                                    Padding(
+                                                    isAmbiguous || grid.isSudokuFilled() ? SizedBox.shrink() : Padding(
                                                         padding: EdgeInsets.all(15),
                                                         child: getModeHintsButton()
                                                     ),
@@ -533,7 +542,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
             if (count > 0) {
                 for (int i = 0; i < size; i++) {
                     for (int j = 0; j < size; j++) {
-                        if (grid.solvedSudoku[i][j] == idx) grid.cells[i][j] = idx;
+                        if (grid.solvedSudoku[i][j] == idx) grid.revealCell(i, j);
                     }
                 }
                 break;
@@ -542,7 +551,7 @@ class GameState extends State<Game> with TickerProviderStateMixin {
     }
 
     revealBlock() {
-        int choice = Random().nextInt(2);
+        int choice = Random().nextInt(3);
 
         if (choice == 0) {
             int row = 0;
@@ -556,6 +565,22 @@ class GameState extends State<Game> with TickerProviderStateMixin {
                 col = Random().nextInt(size);
             } while (grid.remainingColCells(col) == 0);
             grid.revealCol(col);
+        } else {
+            int row = 0;
+            int col = 0;
+
+            do {
+                row = Random().nextInt(size);
+                col = Random().nextInt(size);
+            } while(grid.checkBlock(row, col, 0) == size);
+
+            int topRow = (row ~/ grid.height) * grid.height;
+            int topCol = (col ~/ grid.width) * grid.width;
+            for (int i = topRow; i < topRow + grid.height; i++) {
+                for (int j = topCol; j < topCol + grid.width; j++) {
+                    if (grid.cells[i][j] == 0) grid.revealCell(i, j);
+                }
+            }
         }
     }
 

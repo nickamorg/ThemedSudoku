@@ -17,7 +17,7 @@ class SudokuGridView {
 
     SudokuGridView({required this.size}) {
         sudoku = Grid(size: size);
-        totalLevels = size * size;
+        totalLevels = size * size - 1;
     }
 
     double size2BorderSize() {
@@ -60,12 +60,16 @@ class Grid {
     }
 
     void generate(int clearedCells) {
-        cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
-        generateSudoku(0, 0);
-        solvedSudoku = cloneSudoku(cells);
-        emptyCellsCount = clearedCells;
-        revealedCells = [];
-        clearCells(clearedCells);
+        int tries = 10;
+
+        do {
+            cells = List.generate(size, (i) => List.filled(size, 0, growable: true), growable: true);
+            generateSudoku(0, 0);
+            solvedSudoku = cloneSudoku(cells);
+            emptyCellsCount = clearedCells;
+            revealedCells = [];
+            clearCells(clearedCells);
+        } while (isSolutionAmbiguous() && --tries > 0);
     }
 
     bool generateSudoku(int row, int col) {
@@ -169,13 +173,14 @@ class Grid {
     }
 
     bool isSolutionAmbiguous() {
-        Grid clone = Grid(size: size);
-        clone.cells = cloneSudoku(cells);
-        clone.generate(0);
+        Grid cloneGrid = Grid(size: size);
+        cloneGrid.cells = cloneSudoku(cells);
+        cloneGrid.emptyCells = emptyCells;
+        cloneGrid.generateSudoku(0, 0);
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if (solvedSudoku[i][j] != clone.cells[i][j]) {
+                if (solvedSudoku[i][j] != cloneGrid.cells[i][j]) {
                     return true;
                 }
             }
@@ -185,11 +190,13 @@ class Grid {
     }
 
     bool isValidSolution() {
-        bool isValidSolution = true;
-        cells.forEach((cellRow) { 
-            isValidSolution = cellRow.where((cell) => cell != 0).toSet().length == size;
-        });
-        if (!isValidSolution) return false;
+        for (int i = 0; i < size; i++) {
+            Set values = { };
+            for (int j = 0; j < size; j++) {
+                if (cells[i][j] != 0) values.add(cells[i][j]);
+            }
+            if (values.length != size) return false;
+        }
 
         for (int j = 0; j < size; j++) {
             Set values = { };
@@ -330,9 +337,10 @@ class Levels {
 						Map<String, dynamic> data = jsonDecode(value);
 
                         data['levels'].forEach((levelSize, levelData) {
-                            SudokuGridView? sudokuGridView = getSudokuBySize(int.parse(levelSize));
+                            int size = int.parse(levelSize);
+                            SudokuGridView? sudokuGridView = getSudokuBySize(size);
                             sudokuGridView!.levelsTime = levelData['time'].cast<int>();
-                            sudokuGridView.sudoku.generate(sudokuGridView.levelsTime.length + 1);
+                            sudokuGridView.sudoku.generate(sudokuGridView.levelsTime.length == size * size - 1 ? Random().nextInt(size * size - 1) : sudokuGridView.levelsTime.length + 1);
                         });
 
                         hints = data['hints'];
